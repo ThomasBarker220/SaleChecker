@@ -12,16 +12,26 @@ import pandas as pd
 
 def check_sales(links):
     pricepattern = re.compile("(?i).*pric.*")
+    itempattern = re.compile(".*product.*(title|name)")
     pattern = "\d+"
     for link in links:
         r = requests.get(link, headers = header).content
         soup = BeautifulSoup(r, "lxml")
         curr_price_tag = soup.find_all('span', {"class" : pricepattern})
+        item_name_tag = soup.find('h1', {"id" : itempattern})
+        if item_name_tag != None:
+            item_name = item_name_tag.text
+            print(item_name.strip())
+        else:
+            item_name_tag = soup.find('h1', {"class": itempattern})
+            item_name = item_name_tag.text
+            print(item_name.strip())
         price_list = []
         for price in curr_price_tag:
             list_price = price.text
             list_price = re.findall(pattern, list_price)
             price_list.append(int(list_price[0]))
+
         print("$" + str(min(price_list)))
         print(link)
 
