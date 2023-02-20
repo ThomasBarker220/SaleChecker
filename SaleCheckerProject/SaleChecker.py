@@ -13,12 +13,11 @@ import pandas as pd
 def check_sales(links, df):
     pricepattern = re.compile("(?i).*pric.*")
     pattern = "\d+"
-    if len(df[0] != 0):
-        currentitemlist = df[0]
-    if len(df[1] != 0):
-        currentpricelist = df[1]
+    if len(df.iloc[0]) != 0:
+        currentpricelist = df.iloc[0]
     newitemlist = []
     newpricelist = []
+    reduced_prices = []
 
     for index, link in enumerate(links):
         r = requests.get(link, headers = header).content
@@ -29,20 +28,24 @@ def check_sales(links, df):
         item_name_tag = soup.find('h1')
         if item_name_tag != None:
             item_name = item_name_tag.text
-            newitemlist.append(item_name.strip())
-            print(item_name.strip())
+            item = item_name.strip()
+            newitemlist.append(item)
+            print(item)
         price_list = []
         for price in curr_price_tag:
             list_price = price.text
             list_price = re.findall(pattern, list_price)
             if len(list_price) > 0:
                 price_list.append(int(list_price[0]))
-        newpricelist.append("$" + str(min(price_list)))
+        updated_price = min(price_list)
+        if index < len(currentpricelist):
+            if updated_price < int(currentpricelist[index][1:]):
+                reduced_prices.append((item, updated_price, link))
+        df[item] = updated_price
+        newpricelist.append("$" + str(updated_price))
         print("$" + str(min(price_list)))
         print(link)
 
-        df[0] = newitemlist
-        df[1] = newpricelist
 
 
 
@@ -68,8 +71,11 @@ if __name__ == '__main__':
             "?pid=580739001&cid=1045334&pcid=1045334&vid=1&nav=meganav%3AMen%3AMen%27s+Clothing%3ASweaters&cpos=18&cexp=368&kcid=CategoryIDs%3D1045334&cvar=2363&ctype=Listing&cpid=res23021722208407532520781#pdp-page-content",
             "https://www.pacsun.com/polo-ralph-lauren/rainbow-logo-crew-neck-sweatshirt-0190600100057.html?tileCgid=mens"]
 
-    df = pd.read_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker\SaleCheckerProject\SaleTrackerSheet.csv')
+    df = pd.read_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker'
+                     r'\SaleCheckerProject\SaleTrackerSheet.csv', index_col=0)
 
     check_sales(urls, df)
 
+    df.to_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker\SaleCheckerProject'
+              r'\SaleTrackerSheet.csv', index=False)
 # "https://oldnavy.gap.com/browse/product.do?pid=4743830120003&pcid=999&vid=1&searchText=waffle+knit#pdp-page-content"
