@@ -19,21 +19,23 @@ def check_sales(links, df):
     newitemlist = []
     newpricelist = []
     reduced_prices = []
-    prevcols = df.shape[1]
-    newcols = 1
 
     for index, link in enumerate(links):
+
         r = requests.get(link, headers = header).content
         soup = BeautifulSoup(r, "lxml")
+
         curr_price_tag = soup.find_all('span', {"class" : pricepattern})
         if curr_price_tag == None:
             curr_price_tag = soup.find_all('div', {"class" : pricepattern})
+
         item_name_tag = soup.find('h1')
         if item_name_tag != None:
             item_name = item_name_tag.text
             item = item_name.strip()
             newitemlist.append(item)
             print(item)
+
         price_list = []
         for price in curr_price_tag:
             list_price = price.text
@@ -41,18 +43,19 @@ def check_sales(links, df):
             if len(list_price) > 0:
                 price_list.append(int(list_price[0]))
         updated_price = min(price_list)
-        if index < len(currentpricelist):
-            if updated_price < int(currentpricelist[index]):
+
+        if item in df.columns:
+            if updated_price < int(df[item]):
                 reduced_prices.append((item, updated_price, link))
+
         df[item] = updated_price
         newpricelist.append("$" + str(updated_price))
         print("$" + str(min(price_list)))
         print(link)
-        newcols += 1
+    df = df[newitemlist]
     print(reduced_prices)
-    # if newcols < prevcols:
-    #     newcols -= 1
-    #     df.drop(df.iloc[:, newcols:], inplace=True, axis=1)
+
+
 
 
 
@@ -76,8 +79,7 @@ if __name__ == '__main__':
             "https://unitedbyblue.com/products/mens-indigo-throwback"
             "-sweatshirt",
             "https://bananarepublicfactory.gapfactory.com/browse/product.do"
-            "?pid=580739001&cid=1045334&pcid=1045334&vid=1&nav=meganav%3AMen%3AMen%27s+Clothing%3ASweaters&cpos=18&cexp=368&kcid=CategoryIDs%3D1045334&cvar=2363&ctype=Listing&cpid=res23021722208407532520781#pdp-page-content",
-            "https://www.pacsun.com/polo-ralph-lauren/rainbow-logo-crew-neck-sweatshirt-0190600100057.html?tileCgid=mens"]
+            "?pid=580739001&cid=1045334&pcid=1045334&vid=1&nav=meganav%3AMen%3AMen%27s+Clothing%3ASweaters&cpos=18&cexp=368&kcid=CategoryIDs%3D1045334&cvar=2363&ctype=Listing&cpid=res23021722208407532520781#pdp-page-content"]
 
     df = pd.read_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker'
                      r'\SaleCheckerProject\SaleTrackerSheet.csv')
@@ -85,5 +87,6 @@ if __name__ == '__main__':
     check_sales(urls, df)
 
     df.to_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker\SaleCheckerProject'
-              r'\SaleTrackerSheet.csv')
-# "https://oldnavy.gap.com/browse/product.do?pid=4743830120003&pcid=999&vid=1&searchText=waffle+knit#pdp-page-content"
+              r'\SaleTrackerSheet.csv', index=False)
+
+#"https://www.pacsun.com/polo-ralph-lauren/rainbow-logo-crew-neck-sweatshirt-0190600100057.html?tileCgid=mens"
