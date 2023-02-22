@@ -14,10 +14,13 @@ def check_sales(links, df):
     pricepattern = re.compile("(?i).*pric.*")
     pattern = "\d+"
     if len(df.iloc[0]) != 0:
-        currentpricelist = df.iloc[0]
+        currentpricelist = df.iloc[0,:].astype(int).tolist()
+        print(currentpricelist)
     newitemlist = []
     newpricelist = []
     reduced_prices = []
+    prevcols = df.shape[1]
+    newcols = 1
 
     for index, link in enumerate(links):
         r = requests.get(link, headers = header).content
@@ -39,12 +42,17 @@ def check_sales(links, df):
                 price_list.append(int(list_price[0]))
         updated_price = min(price_list)
         if index < len(currentpricelist):
-            if updated_price < int(currentpricelist[index][1:]):
+            if updated_price < int(currentpricelist[index]):
                 reduced_prices.append((item, updated_price, link))
         df[item] = updated_price
         newpricelist.append("$" + str(updated_price))
         print("$" + str(min(price_list)))
         print(link)
+        newcols += 1
+    print(reduced_prices)
+    # if newcols < prevcols:
+    #     newcols -= 1
+    #     df.drop(df.iloc[:, newcols:], inplace=True, axis=1)
 
 
 
@@ -72,10 +80,10 @@ if __name__ == '__main__':
             "https://www.pacsun.com/polo-ralph-lauren/rainbow-logo-crew-neck-sweatshirt-0190600100057.html?tileCgid=mens"]
 
     df = pd.read_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker'
-                     r'\SaleCheckerProject\SaleTrackerSheet.csv', index_col=0)
+                     r'\SaleCheckerProject\SaleTrackerSheet.csv')
 
     check_sales(urls, df)
 
     df.to_csv(r'C:\Users\tbark\PycharmProjects\SaleChecker\SaleCheckerProject'
-              r'\SaleTrackerSheet.csv', index=False)
+              r'\SaleTrackerSheet.csv')
 # "https://oldnavy.gap.com/browse/product.do?pid=4743830120003&pcid=999&vid=1&searchText=waffle+knit#pdp-page-content"
