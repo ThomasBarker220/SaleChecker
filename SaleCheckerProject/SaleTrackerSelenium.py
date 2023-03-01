@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.options import Options
 from PIL import Image
 import re
 
+
 def check_sales(links):
     options = Options()
     options.add_argument('--headless')
@@ -22,12 +23,19 @@ def check_sales(links):
             service=Service(ChromeDriverManager().install()),
             options=options)
         driver.get(link)
+
+        driver.implicitly_wait(10)
+
+
         window_height = driver.execute_script(
             'return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );')
         driver.set_window_size(1920, window_height / 3)
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(10)
+
         item_name = driver.find_element(By.CSS_SELECTOR, 'h1')
         print(item_name.text)
+
+        print(link)
 
         item_prices = driver.find_elements(By.CSS_SELECTOR, "*[class*=pric]")
         lowest_price = 99999999
@@ -89,4 +97,5 @@ if __name__ == '__main__':
     #     f.write(driver.get_screenshot_as_png())
     # img = Image.open('ss.png')
     # img.show()
+
 
